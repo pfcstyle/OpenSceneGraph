@@ -122,7 +122,7 @@ public:
 
     PickHandler():
         _mx(0.0),_my(0.0),
-        _usePolytopeIntersector(false),
+        _usePolytopeIntersector(true),
         _useWindowCoordinates(false),
         _precisionHint(osgUtil::Intersector::USE_DOUBLE_CALCULATIONS),
         _primitiveMask(osgUtil::PolytopeIntersector::ALL_PRIMITIVES) {}
@@ -211,8 +211,8 @@ public:
         osg::ref_ptr<osgUtil::IntersectorGroup> intersectors = new osgUtil::IntersectorGroup;
 
         osg::Viewport* viewport = viewer->getCamera()->getViewport();
-        unsigned int numX = 100;
-        unsigned int numY = 100;
+        unsigned int numX = 3;
+        unsigned int numY = 2;
         double dx = viewport->width()/double(numX-1);
         double dy = viewport->width()/double(numX-1);
 
@@ -251,7 +251,7 @@ public:
         osg::ElapsedTime elapsedTime;
         viewer->getCamera()->accept(iv);
 
-        OSG_NOTICE<<"Intersection traversal took "<<elapsedTime.elapsedTime_m()<<"ms for "<<intersectors->getIntersectors().size()<<" intersectors"<<std::endl;
+        std::cout<<"Intersection traversal took "<<elapsedTime.elapsedTime_m()<<"ms for "<<intersectors->getIntersectors().size()<<" intersectors"<<std::endl;
 
     }
 
@@ -304,7 +304,7 @@ public:
             {
                 osgUtil::PolytopeIntersector::Intersection intersection = picker->getFirstIntersection();
 
-                osg::notify(osg::NOTICE)<<"Picked "<<intersection.localIntersectionPoint<<std::endl
+                std::cout<<"Picked "<<intersection.localIntersectionPoint<<std::endl
                     <<"  Distance to ref. plane "<<intersection.distance
                     <<", max. dist "<<intersection.maxDistance
                     <<", primitive index "<<intersection.primitiveIndex
@@ -463,7 +463,7 @@ int main( int argc, char **argv )
 
     unsigned int mask = osgUtil::PolytopeIntersector::ALL_PRIMITIVES;
     while (arguments.read("--prim-mask", mask) || arguments.read("--pm", mask)) { pickhandler->setPrimitiveMask(mask); }
-
+	//pickhandler->setPrimitiveMask(osgUtil::PolytopeIntersector::LINE_PRIMITIVES);
     // load model
     osg::ref_ptr<osg::Node> loadedModel = osgDB::readRefNodeFiles(arguments);
 
@@ -478,7 +478,7 @@ int main( int argc, char **argv )
 
     while(arguments.read("--points")) { ConvertPrimitives cp(osg::PrimitiveSet::POINTS); loadedModel->accept(cp); }
     while(arguments.read("--lines")) { ConvertPrimitives cp(osg::PrimitiveSet::LINES); loadedModel->accept(cp); }
-
+	//ConvertPrimitives cp(osg::PrimitiveSet::LINES); loadedModel->accept(cp);
     if (useKdTree)
     {
         OSG_NOTICE<<"Building KdTrees"<<std::endl;
