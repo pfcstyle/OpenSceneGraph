@@ -29,6 +29,10 @@
 #include <osgDB/ReadFile>
 #include <osgDB/WriteFile>
 #include <osgDB/FileNameUtils>
+#include <osgDB/FileUtils>
+
+#include <osgViewer/Viewer>
+
 
 #include <osgUtil/Optimizer>
 
@@ -208,6 +212,30 @@ public:
     bool _makeAllChildrenPaged;
 };
 
+osg::Group* createOsgb(const std::string osgb_dir) {
+	osg::ref_ptr<osg::Group> group = new osg::Group;
+
+	//std::string ext = osgDB::getLowerCaseFileExtension(data_dir);
+
+	std::string fileName = osgDB::findDataFile(osgb_dir);
+	if (fileName.empty()) {
+		OSG_INFO << "Reading file " << fileName << "not found" << std::endl;
+		return NULL;
+	}
+	osgDB::DirectoryContents dirNames = osgDB::getDirectoryContents(osgb_dir);
+	//for each (std::string dir in dirNames)//from cpp11
+	for (unsigned i = 0; i < dirNames.size(); i++)
+	{
+		std::string dir = dirNames.at(i);
+		if (dir.find(".") != std::string::npos)
+			continue;
+		std::string osgbFile = osgb_dir + dir + "\\" + dir + ".osgb";
+		//std::cout << "osgb path: " << osgbFile << std::endl;
+		group->addChild(osgDB::readNodeFile(osgbFile));
+	}
+	return group.release();
+}
+
 
 int main( int argc, char **argv )
 {
@@ -224,28 +252,28 @@ int main( int argc, char **argv )
     arguments.getApplicationUsage()->addCommandLineOption("--makeAllChildrenPaged","Force all children of LOD to be written out as external PagedLOD children");
 
     // if user request help write it out to cout.
-    if (arguments.read("-h") || arguments.read("--help"))
-    {
-        arguments.getApplicationUsage()->write(std::cout);
-        return 1;
-    }
+    //if (arguments.read("-h") || arguments.read("--help"))
+    //{
+    //    arguments.getApplicationUsage()->write(std::cout);
+    //    return 1;
+    //}
 
-    std::string outputfile("output.ive");
-    while (arguments.read("-o",outputfile)) {}
+    //std::string outputfile("output.ive");
+    //while (arguments.read("-o",outputfile)) {}
 
 
-    bool makeAllChildrenPaged = false;
-    while (arguments.read("--makeAllChildrenPaged")) { makeAllChildrenPaged = true; }
+    //bool makeAllChildrenPaged = false;
+    //while (arguments.read("--makeAllChildrenPaged")) { makeAllChildrenPaged = true; }
 
-    // any option left unread are converted into errors to write out later.
-    arguments.reportRemainingOptionsAsUnrecognized();
+    //// any option left unread are converted into errors to write out later.
+    //arguments.reportRemainingOptionsAsUnrecognized();
 
-    // report any errors if they have occurred when parsing the program arguments.
-    if (arguments.errors())
-    {
-        arguments.writeErrorMessages(std::cout);
-        return 1;
-    }
+    //// report any errors if they have occurred when parsing the program arguments.
+    //if (arguments.errors())
+    //{
+    //    arguments.writeErrorMessages(std::cout);
+    //    return 1;
+    //}
 
 //     if (arguments.argc()<=1)
 //     {
@@ -254,34 +282,37 @@ int main( int argc, char **argv )
 //     }
 
 
-    osg::ref_ptr<osg::Node> model = osgDB::readRefNodeFiles(arguments);
+	osg::ref_ptr<osg::Node> model = createOsgb("G:\\BaiduYunDownload\\dikuang\\baiyunyan-osgb\\Production_2\\Data\\");
 
-    if (!model)
-    {
-        osg::notify(osg::NOTICE)<<"No model loaded."<<std::endl;
-        return 1;
-    }
+	/*if (!model)
+	{
+		osg::notify(osg::NOTICE)<<"No model loaded."<<std::endl;
+		return 1;
+	}
 
-    std::string basename( osgDB::getNameLessExtension(outputfile) );
-    std::string ext = '.'+ osgDB::getFileExtension(outputfile);
+	std::string basename( osgDB::getNameLessExtension(outputfile) );
+	std::string ext = '.'+ osgDB::getFileExtension(outputfile);
 
-    ConvertToPageLODVistor converter(basename,ext, makeAllChildrenPaged);
-    model->accept(converter);
-    converter.convert();
+	ConvertToPageLODVistor converter(basename,ext, makeAllChildrenPaged);
+	model->accept(converter);
+	converter.convert();
 
-    NameVistor nameNodes;
-    model->accept(nameNodes);
+	NameVistor nameNodes;
+	model->accept(nameNodes);*/
 
     //CheckVisitor checkNodes;
     //model->accept(checkNodes);
 
     if (model.valid())
     {
-        osgDB::writeNodeFile(*model,outputfile);
+        //osgDB::writeNodeFile(*model,outputfile);
 
-        WriteOutPagedLODSubgraphsVistor woplsv;
-        model->accept(woplsv);
+		/*WriteOutPagedLODSubgraphsVistor woplsv;
+		model->accept(woplsv);*/
+		
     }
-
-    return 0;
+	osg::ref_ptr<osgViewer::Viewer> viewer = new osgViewer::Viewer;
+	viewer->setSceneData(model);
+	osg::setNotifyLevel(osg::NotifySeverity::WARN);
+    return viewer->run();
 }

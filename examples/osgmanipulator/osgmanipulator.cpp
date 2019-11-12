@@ -177,7 +177,7 @@ osgManipulator::Dragger* createDragger(const std::string& name)
 class DraggerContainer : public osg::Group
 {
 public:
-    DraggerContainer() : _draggerSize(240.0f), _active(true) {}
+    DraggerContainer() : _draggerSize(120.0f), _active(true) {}
 
     DraggerContainer( const DraggerContainer& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY )
     :   osg::Group(copy, copyop),
@@ -461,7 +461,7 @@ int main( int argc, char **argv )
     {
         //std::cout << arguments.getApplicationName() <<": No data loaded" << std::endl;
         //return 1;
-        loadedModel = createDemoScene(fixedSizeInScreen);
+        loadedModel = createDemoScene(true);
         tragger2Scene=false;
     }
 
